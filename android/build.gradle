@@ -58,7 +58,7 @@ repositories {
 
 dependencies {
     //noinspection GradleDynamicVersion
-    implementation 'com.facebook.react:react-native:0.66.1'
+    implementation 'com.facebook.react:react-native:+'
     
     def exoPlayerVersion = safeExtGet("exoPlayerVersion", '2.14.2')
 
