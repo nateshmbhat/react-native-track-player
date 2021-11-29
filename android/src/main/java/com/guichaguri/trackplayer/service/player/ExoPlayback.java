@@ -8,7 +8,6 @@ import com.facebook.react.bridge.Promise;
 import com.google.android.exoplayer2.*;
 import com.google.android.exoplayer2.Player.EventListener;
 import com.google.android.exoplayer2.Timeline.Window;
-import com.google.android.exoplayer2.extractor.mp4.MdtaMetadataEntry;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.metadata.flac.VorbisComment;
@@ -33,7 +32,7 @@ import java.util.List;
 /**
  * @author Guichaguri
  */
-public abstract class ExoPlayback<T extends Player> implements EventListener, MetadataOutput {
+public abstract class ExoPlayback<T extends ExoPlayer> implements EventListener, MetadataOutput {
 
     protected final Context context;
     protected final MusicManager manager;
@@ -54,7 +53,7 @@ public abstract class ExoPlayback<T extends Player> implements EventListener, Me
         this.player = player;
         this.autoUpdateMetadata = autoUpdateMetadata;
 
-        Player.MetadataComponent component = player.getMetadataComponent();
+        ExoPlayer.MetadataComponent component = player.getMetadataComponent();
         if(component != null) component.addMetadataOutput(this);
     }
 
@@ -247,7 +246,7 @@ public abstract class ExoPlayback<T extends Player> implements EventListener, Me
     public void onTimelineChanged(@NonNull Timeline timeline, int reason) {
         Log.d(Utils.LOG, "onTimelineChanged: " + reason);
 
-        if((reason == Player.TIMELINE_CHANGE_REASON_PREPARED || reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC) && !timeline.isEmpty()) {
+        if(!timeline.isEmpty()) {
             onPositionDiscontinuity(Player.DISCONTINUITY_REASON_INTERNAL);
         }
     }
@@ -263,14 +262,14 @@ public abstract class ExoPlayback<T extends Player> implements EventListener, Me
 
             // Track changed because it ended
             // We'll use its duration instead of the last known position
-            if (reason == Player.DISCONTINUITY_REASON_PERIOD_TRANSITION && lastKnownWindow != C.INDEX_UNSET) {
+            if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION && lastKnownWindow != C.INDEX_UNSET) {
                 if (lastKnownWindow >= player.getCurrentTimeline().getWindowCount()) return;
                 long duration = player.getCurrentTimeline().getWindow(lastKnownWindow, new Window()).getDurationMs();
                 if(duration != C.TIME_UNSET) lastKnownPosition = duration;
             }
 
             manager.onTrackUpdate(prevIndex, lastKnownPosition, nextIndex, next);
-        } else if (reason == Player.DISCONTINUITY_REASON_PERIOD_TRANSITION && lastKnownWindow == player.getCurrentWindowIndex()) {
+        } else if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION && lastKnownWindow == player.getCurrentWindowIndex()) {
             Integer nextIndex = getCurrentTrackIndex();
             Track next = nextIndex == null ? null : queue.get(nextIndex);
 
