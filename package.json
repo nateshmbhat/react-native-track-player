@@ -3,6 +3,7 @@
   "version": "2.1.2",
   "description": "A fully fledged audio module created for music apps",
   "types": "lib/index.d.ts",
+  "main" : "lib/index.js",
   "scripts": {
     "build": "rimraf lib && tsc",
     "lint": "eslint \"src/**/*.ts\"",
